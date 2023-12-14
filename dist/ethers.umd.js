@@ -16444,26 +16444,26 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
      */
     const BN_0 = BigInt(0);
     function allowNull(format, nullValue) {
-        return (function (value) {
+        return function (value) {
             if (value == null) {
                 return nullValue;
             }
             return format(value);
-        });
+        };
     }
     function arrayOf(format) {
-        return ((array) => {
+        return (array) => {
             if (!Array.isArray(array)) {
                 throw new Error("not an array");
             }
             return array.map((i) => format(i));
-        });
+        };
     }
     // Requires an object which matches a fleet of other formatters
     // Any FormatFunc may return `undefined` to have the value omitted
     // from the result object. Calls preserve `this`.
     function object(format, altNames) {
-        return ((value) => {
+        return (value) => {
             const result = {};
             for (const key in format) {
                 let srcKey = key;
@@ -16482,12 +16482,12 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
                     }
                 }
                 catch (error) {
-                    const message = (error instanceof Error) ? error.message : "not-an-error";
+                    const message = error instanceof Error ? error.message : "not-an-error";
                     assert(false, `invalid value for value.${key} (${message})`, "BAD_DATA", { value });
                 }
             }
             return result;
-        });
+        };
     }
     function formatBoolean(value) {
         switch (value) {
@@ -16519,7 +16519,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         transactionHash: formatHash,
         transactionIndex: getNumber,
     }, {
-        index: ["logIndex"]
+        index: ["logIndex"],
     });
     function formatLog(value) {
         return _formatLog(value);
@@ -16535,12 +16535,13 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         gasUsed: getBigInt,
         miner: allowNull(getAddress),
         extraData: formatData,
-        baseFeePerGas: allowNull(getBigInt)
+        baseFeePerGas: allowNull(getBigInt),
     });
     function formatBlock(value) {
+        value.timestamp = Math.floor(value.timestamp / 1000);
         const result = _formatBlock(value);
         result.transactions = value.transactions.map((tx) => {
-            if (typeof (tx) === "string") {
+            if (typeof tx === "string") {
                 return tx;
             }
             return formatTransactionResponse(tx);
@@ -16557,7 +16558,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         index: getNumber,
         blockHash: formatHash,
     }, {
-        index: ["logIndex"]
+        index: ["logIndex"],
     });
     function formatReceiptLog(value) {
         return _formatReceiptLog(value);
@@ -16579,7 +16580,7 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         cumulativeGasUsed: getBigInt,
         effectiveGasPrice: allowNull(getBigInt),
         status: allowNull(getNumber),
-        type: allowNull(getNumber, 0)
+        type: allowNull(getNumber, 0),
     }, {
         effectiveGasPrice: ["gasPrice"],
         hash: ["transactionHash"],
@@ -16618,10 +16619,10 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
             nonce: getNumber,
             data: formatData,
             creates: allowNull(getAddress, null),
-            chainId: allowNull(getBigInt, null)
+            chainId: allowNull(getBigInt, null),
         }, {
             data: ["input"],
-            gasLimit: ["gas"]
+            gasLimit: ["gas"],
         })(value);
         // If to and creates are empty, populate the creates from the value
         if (result.to == null && result.creates == null) {
@@ -16648,38 +16649,38 @@ const __$G = (typeof globalThis !== 'undefined' ? globalThis: typeof window !== 
         }
         // @TODO: check chainID
         /*
-        if (value.chainId != null) {
-            let chainId = value.chainId;
-
-            if (isHexString(chainId)) {
-                chainId = BigNumber.from(chainId).toNumber();
-            }
-
-            result.chainId = chainId;
-
-        } else {
-            let chainId = value.networkId;
-
-            // geth-etc returns chainId
-            if (chainId == null && result.v == null) {
-                chainId = value.chainId;
-            }
-
-            if (isHexString(chainId)) {
-                chainId = BigNumber.from(chainId).toNumber();
-            }
-
-            if (typeof(chainId) !== "number" && result.v != null) {
-                chainId = (result.v - 35) / 2;
-                if (chainId < 0) { chainId = 0; }
-                chainId = parseInt(chainId);
-            }
-
-            if (typeof(chainId) !== "number") { chainId = 0; }
-
-            result.chainId = chainId;
-        }
-        */
+          if (value.chainId != null) {
+              let chainId = value.chainId;
+      
+              if (isHexString(chainId)) {
+                  chainId = BigNumber.from(chainId).toNumber();
+              }
+      
+              result.chainId = chainId;
+      
+          } else {
+              let chainId = value.networkId;
+      
+              // geth-etc returns chainId
+              if (chainId == null && result.v == null) {
+                  chainId = value.chainId;
+              }
+      
+              if (isHexString(chainId)) {
+                  chainId = BigNumber.from(chainId).toNumber();
+              }
+      
+              if (typeof(chainId) !== "number" && result.v != null) {
+                  chainId = (result.v - 35) / 2;
+                  if (chainId < 0) { chainId = 0; }
+                  chainId = parseInt(chainId);
+              }
+      
+              if (typeof(chainId) !== "number") { chainId = 0; }
+      
+              result.chainId = chainId;
+          }
+          */
         // 0x0000... should actually be null
         if (result.blockHash && getBigInt(result.blockHash) === BN_0) {
             result.blockHash = null;
